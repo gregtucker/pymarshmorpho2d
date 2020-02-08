@@ -4,11 +4,12 @@
 import numpy as np
 
 from bmipy import Bmi
-from pymarshmorpho2d import MarshMorphoModel
+from pymarshmorpho2d import MarshEvolver
 from landlab import load_params
 
 _DEFAULT_PARAMETERS = {
-
+    'rel_sl_rise_rate': 0.001 / 365.0,
+    'tidal_range': 3.1,
 }
 
 
@@ -31,7 +32,7 @@ class MarshMorphoBmi(Bmi):
 
         self._start_time = 0.0
         self._end_time = np.finfo("d").max
-        self._time_units = "?"
+        self._time_units = "d"
 
     def initialize(self, filename=None):
         """Initialize the MarshMorphoBmi model.
