@@ -93,8 +93,8 @@ class MarshEvolver(Component):
         # lower and upper limits for veg growth [m]
         # see McKee, K.L., Patrick, W.H., Jr., 1988.
         # these are "dBlo" and "dBup" in matlab original
-        self._min_elev_for_veg_growth = ((-0.237 * self._tidal_range_for_veg)
-                                         - 0.092)
+        self._min_elev_for_veg_growth = -(0.237 * self._tidal_range_for_veg
+                                          - 0.092)
         self._max_elev_for_veg_growth = self._tidal_range_for_veg / 2.0
 
     def get_water_depth(self, min_depth=0.01):
@@ -123,8 +123,10 @@ class MarshEvolver(Component):
                                  - height_above_msl)
                               / (self._min_elev_for_veg_growth
                                  - self._max_elev_for_veg_growth)**2)
-        B[height_above_msl > self._max_elev_for_veg_growth] = 0.0
-        B[height_above_msl < self._min_elev_for_veg_growth] = 0.0
+        self._vegetation[height_above_msl > self._max_elev_for_veg_growth] = 0.0
+        self._vegetation[height_above_msl < self._min_elev_for_veg_growth] = 0.0
+        print(self._vegetation)
+        print(self._max_elev_for_veg_growth)
 
     def run_one_step(self, dt):
         """Advance in time."""
