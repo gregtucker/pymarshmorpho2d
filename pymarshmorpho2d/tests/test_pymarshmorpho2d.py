@@ -69,7 +69,7 @@ def test_get_water_depth():
                                0.2572, 0.1500, 0.0610, 0.0100, 0.0100],
                               decimal=4)
 
-def test_update_vegetation():
+def test_update_vegetation_and_roughness():
 
     # Create a test grid and topography (positive above starting mean sea level)
     grid = RasterModelGrid((5, 5), xy_spacing=(2.0, 2.0))
@@ -79,7 +79,7 @@ def test_update_vegetation():
     # Instantiate MarshEvolver
     mev = MarshEvolver(grid)
 
-    # Run get_water_depth
+    # Run update_vegetation
     mev._mean_sea_level = 0.002
     mev.update_vegetation()
 
@@ -97,3 +97,14 @@ def test_update_vegetation():
                                0.9391, 0.9972, 0.9910, 0.9366, 0.8520,
                                0.7183, 0.4725, 0.2102, 0.0307,    0.0],
                               decimal=4)
+
+    # Update roughness
+    mev.update_roughness()
+    
+    # Roughness should have default values in areas with and without veg
+    assert_array_equal(mev._roughness,
+                       [0.02, 0.02, 0.02, 0.02, 0.02,
+                        0.02, 0.02, 0.02, 0.02, 0.02,
+                        0.02, 0.10, 0.10, 0.10, 0.10,
+                        0.10, 0.10, 0.10, 0.10, 0.10,
+                        0.10, 0.10, 0.10, 0.10, 0.10,])

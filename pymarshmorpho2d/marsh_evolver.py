@@ -54,12 +54,22 @@ class MarshEvolver(Component):
             "mapping": "node",
             "doc": "Some measure of vegetation...?",
         },
+        "roughness": {
+            "dtype": float,
+            "intent": "out",
+            "optional": False,
+            "units": "s/m^1/3",
+            "mapping": "node",
+            "doc": "Manning roughness coefficient",
+        },
     }
 
     def __init__(self, grid,
                  rel_sl_rise_rate=2.74e-6,
                  tidal_range=3.1,
                  tidal_range_for_veg=3.1,
+                 roughness_with_veg=0.1,
+                 roughness_without_veg=0.02
                  ):
         """Initialize the MarshEvolver.
 
@@ -78,17 +88,22 @@ class MarshEvolver(Component):
         super(MarshEvolver, self).__init__(grid)
         self.initialize_output_fields()
 
+        # Get references to fields
         self._elev = self._grid.at_node['topographic__elevation']
         self._water_depth = self._grid.at_node['water_depth']
         self._fully_wet_depth = self._grid.at_node['fully_wet__depth']
         self._veg_is_present = self._grid.at_node['veg_is_present']
         self._vegetation = self._grid.at_node['vegetation']
+        self._roughness = self._grid.at_node['roughness']
 
+        # Set parameter values
         self._mean_sea_level = 0.0
         self._rel_sl_rise_rate = rel_sl_rise_rate
         self._tidal_range = tidal_range
         self._tidal_range_for_veg = tidal_range_for_veg
         self._tidal_half_range = tidal_range / 2.0
+        self._roughness_with_veg = roughness_with_veg
+        self._roughness_without_veg = roughness_without_veg
 
         # lower and upper limits for veg growth [m]
         # see McKee, K.L., Patrick, W.H., Jr., 1988.
@@ -125,8 +140,11 @@ class MarshEvolver(Component):
                                  - self._max_elev_for_veg_growth)**2)
         self._vegetation[height_above_msl > self._max_elev_for_veg_growth] = 0.0
         self._vegetation[height_above_msl < self._min_elev_for_veg_growth] = 0.0
-        print(self._vegetation)
-        print(self._max_elev_for_veg_growth)
+        
+    def update_roughness(self):
+        """Update Manning's n values."""
+        self._roughness[:] = self._roughness_without_veg
+        self._roughness[self._veg_is_present] = self._roughness_with_veg
 
     def run_one_step(self, dt):
         """Advance in time."""
@@ -141,3 +159,4 @@ class MarshEvolver(Component):
         self.update_vegetation()
 
         # roughness
+        self.update_roughness()
